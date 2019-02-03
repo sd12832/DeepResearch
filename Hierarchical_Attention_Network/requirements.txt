@@ -1,7 +1,0 @@
-pandas
-numpy
-tensorflow
-keras
-nltk
-matplotlib
-sklearn
