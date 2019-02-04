@@ -1,24 +1,17 @@
 import pandas as pd
 import numpy as np
 from keras.preprocessing.text import Tokenizer,  text_to_word_sequence
-from keras.engine.topology import Layer
-from keras import initializers as initializers, regularizers, constraints
-from keras.callbacks import Callback, ModelCheckpoint
-from keras.utils.np_utils import to_categorical
-from keras.layers import Embedding, Input, Dense, LSTM, GRU, Bidirectional, TimeDistributed, Dropout
-from keras import backend as K  
-from keras import optimizers
+from keras import regularizers
+from keras.callbacks import ModelCheckpoint
+from keras.layers import Embedding, Input, Dense, LSTM, Bidirectional, TimeDistributed, Dropout
 from keras.models import Model
-import nltk
-import re
 import matplotlib.pyplot as plt
-import sys
-from sklearn.metrics import roc_auc_score
 from nltk import tokenize
 from attention_with_context import AttentionWithContext
-from sklearn.utils import shuffle
 import re
 import time
+from pyspark import SparkContext, SparkConf
+
 
 class HAN(object):
     """
@@ -71,7 +64,16 @@ class HAN(object):
             self.set_model()
         except AssertionError:
             print('Input and label data must be of same size')
-    
+
+        # Implement this after you have seen all the different kinds of errors
+        # try:
+        #     conf = SparkConf().setAppName('HANMusicClassifier').setMaster('')
+        #     self.sc = SparkContext(conf=conf)
+        # except Error:
+        conf = SparkConf().setAppName('HANMusicClassifier')
+        self.sc = SparkContext(conf=conf)
+
+
     def set_hyperparameters(self, tweaked_instances):
         """Set hyperparameters of HAN model.
         Keywords arguemnts:
