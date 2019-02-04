@@ -29,8 +29,7 @@ def main():
     han_network.set_hyperparameters({'l2_regulizer': 1e-13, 'dropout_regulizer': 0.5})
     han_network.show_hyperparameters()
     print(han_network.get_model().summary())
-    han_network.train_model(epochs=3, batch_size=16,
-                            best_model_path='./best_model.h5')
+    #han_network.train_model(epochs=3, batch_size=16)
 
 
 

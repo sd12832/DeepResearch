@@ -11,6 +11,7 @@ from attention_with_context import AttentionWithContext
 import re
 import time
 from pyspark import SparkContext, SparkConf
+from elephas.spark_model import SparkModel
 
 
 class HAN(object):
@@ -249,22 +250,22 @@ class HAN(object):
         self.model = Model(sent_input, preds)
         self.model.compile(
             loss=self.hyperparameters['loss'], optimizer=self.hyperparameters['optimizer'], metrics=self.hyperparameters['metrics'])
-        
-    def train_model(self, epochs, batch_size, best_model_path = None, final_model_path = None, plot_learning_curve = True):
+        self.spark_model = SparkModel(self.model, frequency='epoch', mode='asynchronous')
+
+    # Currently cannot plot learning curve
+    def train_model(self, rdd, epochs, batch_size, verbose=1, validation_split=0.1):
         """Training the model
+        rdd  -- The actual data
         epochs -- Total number of epochs
         batch_size -- size of a batch
-        best_model_path -- path to save best model i.e. weights with lowest validation score.
-        final_model_path -- path to save final model i.e. final weights
-        plot_learning_curve -- Want to checkout Learning curve
+        verbose -- Whether or not we want verbose feedback
+        validation_split -- What percentage of the data from the rdd is actually used as a validation set
         """
-        if best_model_path is not None:
-            checkpoint = ModelCheckpoint(best_model_path, verbose=0, monitor='val_loss', save_best_only=True, mode='auto')
-        self.history = self.model.fit(self.x_train, self.y_train, validation_data=(self.x_val, self.y_val), epochs=epochs, batch_size=batch_size, verbose = self.verbose, callbacks = [checkpoint])
-        if plot_learning_curve:
-            self.plot_results()
-        if final_model_path is not None:
-            self.model.save(final_model_path)
+
+        self.spark_model.fit(self, rdd, epochs=epochs, batch_size=batch_size, verbose=verbose, validation_split=validation_split)
+
+    def predict(self, rdd):
+        self.spark_model.predict(rdd)
     
     def plot_results(self):
         """
